@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WoW HC Character Randomizer</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #16213e;
+      --surface2: #0f3460;
+      --accent: #e94560;
+      --accent-hover: #ff6b6b;
+      --text: #eaeaea;
+      --text-muted: #a0a0b0;
+      --alliance: #0078ff;
+      --horde: #b30000;
+      --border: #2a2a4a;
+      --success: #4caf50;
+      --disabled: #555;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+
+    /* Result display */
+    .result-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.3s;
+    }
+
+    .result-box.has-result { border-color: var(--accent); }
+
+    .result-icons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+    }
+
+    .result-icon.race-icon { border-color: #888; }
+    .result-icon.class-icon { border-color: #ffd100; }
+    .result-icon.spec-icon { border-color: var(--accent); }
+
+    .result-race {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    .result-class {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    .result-faction {
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .result-faction.alliance { background: var(--alliance); color: #fff; }
+    .result-faction.horde { background: var(--horde); color: #fff; }
+
+    .placeholder-text {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 1.1rem;
+    }
+
+    .randomize-btn {
+      display: block;
+      margin: 0 auto 2rem;
+      padding: 1rem 3rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .randomize-btn:hover { background: var(--accent-hover); }
+    .randomize-btn:active { transform: scale(0.97); }
+
+    .pool-count {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Section panels */
+    .panel {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Faction/Race tree */
+    .faction-tree {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .faction-group {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .faction-group.disabled { border-color: transparent; opacity: 0.5; }
+
+    .faction-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .faction-header:hover { background: var(--surface2); }
+
+    .faction-header .faction-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .faction-header .faction-name {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .faction-header.disabled .faction-name {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .faction-header .toggle-indicator {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .race-list {
+      margin-top: 0.4rem;
+      padding-left: 0.5rem;
+    }
+
+    .race-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .race-item:hover { background: var(--surface2); }
+
+    .race-item img {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid #888;
+    }
+
+    .race-item.disabled img {
+      border-color: var(--disabled);
+      filter: grayscale(0.8);
+    }
+
+    .race-item .race-name {
+      font-size: 0.88rem;
+    }
+
+    .race-item.disabled .race-name {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    /* Class/Spec tree */
+    .class-tree {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .class-group {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .class-group.disabled { border-color: transparent; opacity: 0.5; }
+
+    .class-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .class-header:hover { background: var(--surface2); }
+
+    .class-header img {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 2px solid #ffd100;
+    }
+
+    .class-header.disabled img {
+      border-color: var(--disabled);
+      filter: grayscale(0.8);
+    }
+
+    .class-header .class-name {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .class-header.disabled .class-name {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .class-header .toggle-indicator {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .spec-list {
+      margin-top: 0.4rem;
+      padding-left: 0.5rem;
+    }
+
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .spec-item:hover { background: var(--surface2); }
+
+    .spec-item img {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid var(--accent);
+    }
+
+    .spec-item.disabled img {
+      border-color: var(--disabled);
+      filter: grayscale(0.8);
+    }
+
+    .spec-item .spec-name {
+      font-size: 0.88rem;
+    }
+
+    .spec-item.disabled .spec-name {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    /* Error */
+    .error-msg {
+      color: var(--accent);
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      body { padding: 1rem 0.5rem; }
+      h1 { font-size: 1.5rem; }
+      .result-class { font-size: 1.4rem; }
+      .randomize-btn { padding: 0.8rem 2rem; font-size: 1rem; }
+      .class-tree { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WoW HC Character Randomizer</h1>
+    <p class="subtitle">Random race / class / spec combinations for World of Warcraft: Hardcore (Classic)</p>
+
+    <div class="result-box" id="resultBox">
+      <span class="placeholder-text">Press the button to get a random character!</span>
+    </div>
+
+    <button class="randomize-btn" id="randomizeBtn">Randomize!</button>
+
+    <p class="pool-count" id="poolCount"></p>
+
+    <!-- Faction/Race toggles -->
+    <div class="panel">
+      <h2>Factions &amp; Races</h2>
+      <div class="faction-tree" id="factionTree"></div>
+    </div>
+
+    <!-- Class/Spec toggles -->
+    <div class="panel">
+      <h2>Classes &amp; Specializations</h2>
+      <div class="class-tree" id="classTree"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== WoW Classic Data ====================
+    const FACTIONS = {
+      Alliance: ['Human', 'Dwarf', 'Night Elf', 'Gnome'],
+      Horde: ['Orc', 'Undead', 'Tauren', 'Troll']
+    };
+
+    const RACE_CLASSES = {
+      Human: ['Warrior', 'Paladin', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+      Dwarf: ['Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest'],
+      'Night Elf': ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Druid'],
+      Gnome: ['Warrior', 'Rogue', 'Mage', 'Warlock'],
+      Orc: ['Warrior', 'Hunter', 'Rogue', 'Shaman', 'Warlock'],
+      Undead: ['Warrior', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+      Tauren: ['Warrior', 'Hunter', 'Shaman', 'Druid'],
+      Troll: ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Mage', 'Shaman']
+    };
+
+    const CLASS_SPECS = {
+      Warrior: ['Arms', 'Fury', 'Protection'],
+      Paladin: ['Holy', 'Protection', 'Retribution'],
+      Hunter: ['Beast Mastery', 'Marksmanship', 'Survival'],
+      Rogue: ['Assassination', 'Combat', 'Subtlety'],
+      Priest: ['Discipline', 'Holy', 'Shadow'],
+      Shaman: ['Elemental', 'Enhancement', 'Restoration'],
+      Mage: ['Arcane', 'Fire', 'Frost'],
+      Warlock: ['Affliction', 'Demonology', 'Destruction'],
+      Druid: ['Balance', 'Feral', 'Restoration']
+    };
+
+    // ==================== Icon Mappings ====================
+    const ICON_BASE = 'https://wow.zamimg.com/images/wow/icons/large';
+
+    const RACE_ICONS = {
+      Human: 'race_human_male',
+      Dwarf: 'race_dwarf_male',
+      'Night Elf': 'race_nightelf_male',
+      Gnome: 'race_gnome_male',
+      Orc: 'race_orc_male',
+      Undead: 'race_scourge_male',
+      Tauren: 'race_tauren_male',
+      Troll: 'race_troll_male'
+    };
+
+    const CLASS_ICONS = {
+      Warrior: 'classicon_warrior',
+      Paladin: 'classicon_paladin',
+      Hunter: 'classicon_hunter',
+      Rogue: 'classicon_rogue',
+      Priest: 'classicon_priest',
+      Shaman: 'classicon_shaman',
+      Mage: 'classicon_mage',
+      Warlock: 'classicon_warlock',
+      Druid: 'classicon_druid'
+    };
+
+    const SPEC_ICONS = {
+      Arms: 'ability_warrior_savageblow',
+      Fury: 'ability_warrior_innerrage',
+      'Beast Mastery': 'ability_hunter_beasttaming',
+      Marksmanship: 'ability_marksmanship',
+      Survival: 'ability_hunter_swiftstrike',
+      Assassination: 'ability_rogue_eviscerate',
+      Combat: 'ability_backstab',
+      Subtlety: 'ability_stealth',
+      Discipline: 'spell_holy_wordfortitude',
+      Shadow: 'spell_shadow_shadowwordpain',
+      Elemental: 'spell_nature_lightning',
+      Enhancement: 'spell_nature_lightningshield',
+      Arcane: 'spell_holy_magicalsentry',
+      Fire: 'spell_fire_firebolt02',
+      Frost: 'spell_frost_frostbolt02',
+      Affliction: 'spell_shadow_deathcoil',
+      Demonology: 'spell_shadow_metamorphosis',
+      Destruction: 'spell_shadow_rainoffire',
+      Balance: 'spell_nature_starfall',
+      Feral: 'ability_racial_bearform'
+    };
+
+    const SPEC_ICONS_BY_CLASS = {
+      Warrior: { Protection: 'ability_warrior_defensivestance' },
+      Paladin: { Holy: 'spell_holy_holybolt', Protection: 'spell_holy_devotionaura', Retribution: 'spell_holy_auraoflight' },
+      Priest: { Holy: 'spell_holy_guardianspirit' },
+      Shaman: { Restoration: 'spell_nature_magicimmunity' },
+      Druid: { Restoration: 'spell_nature_healingtouch' }
+    };
+
+    function getSpecIcon(spec, cls) {
+      if (SPEC_ICONS_BY_CLASS[cls] && SPEC_ICONS_BY_CLASS[cls][spec]) {
+        return SPEC_ICONS_BY_CLASS[cls][spec];
+      }
+      return SPEC_ICONS[spec] || null;
+    }
+
+    function iconUrl(name) {
+      return `${ICON_BASE}/${name}.jpg`;
+    }
+
+    // ==================== State ====================
+    // raceEnabled[raceName] = true/false
+    let raceEnabled = {};
+    for (const races of Object.values(FACTIONS)) {
+      for (const race of races) {
+        raceEnabled[race] = true;
+      }
+    }
+
+    // specEnabled[className][specName] = true/false
+    let specEnabled = {};
+    for (const [cls, specs] of Object.entries(CLASS_SPECS)) {
+      specEnabled[cls] = {};
+      for (const spec of specs) {
+        specEnabled[cls][spec] = true;
+      }
+    }
+
+    // ==================== Build Pool ====================
+    function buildAllCombinations() {
+      const combos = [];
+      for (const [faction, races] of Object.entries(FACTIONS)) {
+        for (const race of races) {
+          for (const cls of RACE_CLASSES[race]) {
+            for (const spec of CLASS_SPECS[cls]) {
+              combos.push({ faction, race, class: cls, spec });
+            }
+          }
+        }
+      }
+      return combos;
+    }
+
+    const ALL_COMBOS = buildAllCombinations();
+
+    function getFilteredPool() {
+      return ALL_COMBOS.filter(combo => {
+        // Race filter
+        if (!raceEnabled[combo.race]) return false;
+        // Spec toggle filter
+        if (!specEnabled[combo.class][combo.spec]) return false;
+        return true;
+      });
+    }
+
+    function updatePoolCount() {
+      const pool = getFilteredPool();
+      document.getElementById('poolCount').textContent =
+        `${pool.length} combination${pool.length !== 1 ? 's' : ''} in pool (out of ${ALL_COMBOS.length} total)`;
+    }
+
+    // ==================== Randomize ====================
+    function randomize() {
+      const pool = getFilteredPool();
+      const box = document.getElementById('resultBox');
+
+      if (pool.length === 0) {
+        box.innerHTML = '<span class="error-msg">No valid combinations! Enable some specs above.</span>';
+        box.classList.remove('has-result');
+        return;
+      }
+
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      const raceIcon = RACE_ICONS[pick.race];
+      const classIcon = CLASS_ICONS[pick.class];
+      const specIcon = getSpecIcon(pick.spec, pick.class);
+
+      box.classList.add('has-result');
+      box.innerHTML = `
+        <div class="result-icons">
+          <img src="${iconUrl(raceIcon)}" class="result-icon race-icon" alt="${pick.race}" title="${pick.race}">
+          <img src="${iconUrl(classIcon)}" class="result-icon class-icon" alt="${pick.class}" title="${pick.class}">
+          <img src="${iconUrl(specIcon)}" class="result-icon spec-icon" alt="${pick.spec}" title="${pick.spec}">
+        </div>
+        <div class="result-race">${pick.race}</div>
+        <div class="result-class">${pick.spec} ${pick.class}</div>
+        <div class="result-faction ${pick.faction.toLowerCase()}">${pick.faction}</div>
+      `;
+    }
+
+    document.getElementById('randomizeBtn').addEventListener('click', randomize);
+
+    // ==================== Faction/Race Tree ====================
+    const FACTION_ICONS = {
+      Alliance: `<svg class="faction-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path fill="#0078ff" d="M32 4L8 20v24l24 16 24-16V20L32 4zm0 8l16 10.7v21.3L32 54.7 16 44V22.7L32 12z"/><path fill="#0078ff" d="M32 20l-8 5.3v10.7L32 41.3l8-5.3V25.3L32 20z"/></svg>`,
+      Horde: `<svg class="faction-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path fill="#b30000" d="M32 4C16.5 4 4 16.5 4 32s12.5 28 28 28 28-12.5 28-28S47.5 4 32 4zm0 8c11 0 20 9 20 20s-9 20-20 20-20-9-20-20 9-20 20-20z"/><path fill="#b30000" d="M26 24h12v16H26z"/></svg>`
+    };
+
+    function isFactionEnabled(faction) {
+      return FACTIONS[faction].some(race => raceEnabled[race]);
+    }
+
+    function isFactionFullyEnabled(faction) {
+      return FACTIONS[faction].every(race => raceEnabled[race]);
+    }
+
+    function renderFactionTree() {
+      const container = document.getElementById('factionTree');
+      container.innerHTML = '';
+
+      for (const [faction, races] of Object.entries(FACTIONS)) {
+        const factionOn = isFactionEnabled(faction);
+        const group = document.createElement('div');
+        group.className = `faction-group${factionOn ? '' : ' disabled'}`;
+
+        const headerDisabled = !factionOn ? ' disabled' : '';
+        const factionColor = faction === 'Alliance' ? 'var(--alliance)' : 'var(--horde)';
+
+        group.innerHTML = `
+          <div class="faction-header${headerDisabled}" data-faction="${faction}">
+            <span class="faction-icon" style="font-size: 1.5rem; font-weight: bold; color: ${factionColor}; width: 32px; text-align: center;">${faction === 'Alliance' ? 'A' : 'H'}</span>
+            <span class="faction-name">${faction}</span>
+            <span class="toggle-indicator">${isFactionFullyEnabled(faction) ? 'all' : factionOn ? 'some' : 'off'}</span>
+          </div>
+          <div class="race-list">
+            ${races.map(race => {
+              const raceIcon = RACE_ICONS[race];
+              const enabled = raceEnabled[race];
+              return `
+                <div class="race-item${enabled ? '' : ' disabled'}" data-race="${race}">
+                  <img src="${iconUrl(raceIcon)}" alt="${race}">
+                  <span class="race-name">${race}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+        container.appendChild(group);
+      }
+
+      // Attach events
+      container.querySelectorAll('.faction-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const faction = header.dataset.faction;
+          const allOn = isFactionFullyEnabled(faction);
+          FACTIONS[faction].forEach(race => {
+            raceEnabled[race] = !allOn;
+          });
+          renderFactionTree();
+          updatePoolCount();
+          saveState();
+        });
+      });
+
+      container.querySelectorAll('.race-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const race = item.dataset.race;
+          raceEnabled[race] = !raceEnabled[race];
+          renderFactionTree();
+          updatePoolCount();
+          saveState();
+        });
+      });
+    }
+
+    // ==================== Class/Spec Tree ====================
+    function isClassEnabled(cls) {
+      return CLASS_SPECS[cls].some(spec => specEnabled[cls][spec]);
+    }
+
+    function isClassFullyEnabled(cls) {
+      return CLASS_SPECS[cls].every(spec => specEnabled[cls][spec]);
+    }
+
+    function renderClassTree() {
+      const container = document.getElementById('classTree');
+      container.innerHTML = '';
+
+      for (const [cls, specs] of Object.entries(CLASS_SPECS)) {
+        const classEnabled = isClassEnabled(cls);
+        const group = document.createElement('div');
+        group.className = `class-group${classEnabled ? '' : ' disabled'}`;
+
+        const classIcon = CLASS_ICONS[cls];
+        const headerDisabled = !classEnabled ? ' disabled' : '';
+
+        group.innerHTML = `
+          <div class="class-header${headerDisabled}" data-class="${cls}">
+            <img src="${iconUrl(classIcon)}" alt="${cls}">
+            <span class="class-name">${cls}</span>
+            <span class="toggle-indicator">${isClassFullyEnabled(cls) ? 'all' : classEnabled ? 'some' : 'off'}</span>
+          </div>
+          <div class="spec-list">
+            ${specs.map(spec => {
+              const specIcon = getSpecIcon(spec, cls);
+              const enabled = specEnabled[cls][spec];
+              return `
+                <div class="spec-item${enabled ? '' : ' disabled'}" data-class="${cls}" data-spec="${spec}">
+                  <img src="${iconUrl(specIcon)}" alt="${spec}">
+                  <span class="spec-name">${spec}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+        container.appendChild(group);
+      }
+
+      // Attach events
+      container.querySelectorAll('.class-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const cls = header.dataset.class;
+          // If all enabled -> disable all. Otherwise -> enable all.
+          const allOn = isClassFullyEnabled(cls);
+          CLASS_SPECS[cls].forEach(spec => {
+            specEnabled[cls][spec] = !allOn;
+          });
+          renderClassTree();
+          updatePoolCount();
+          saveState();
+        });
+      });
+
+      container.querySelectorAll('.spec-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const cls = item.dataset.class;
+          const spec = item.dataset.spec;
+          specEnabled[cls][spec] = !specEnabled[cls][spec];
+          renderClassTree();
+          updatePoolCount();
+          saveState();
+        });
+      });
+    }
+
+    // ==================== Persistence ====================
+    function saveState() {
+      localStorage.setItem('hc-rand-state', JSON.stringify({ raceEnabled, specEnabled }));
+    }
+
+    function loadState() {
+      try {
+        const data = JSON.parse(localStorage.getItem('hc-rand-state'));
+        if (data) {
+          if (data.raceEnabled) {
+            for (const race of Object.keys(raceEnabled)) {
+              if (typeof data.raceEnabled[race] === 'boolean') {
+                raceEnabled[race] = data.raceEnabled[race];
+              }
+            }
+          }
+          if (data.specEnabled) {
+            for (const cls of Object.keys(CLASS_SPECS)) {
+              if (data.specEnabled[cls]) {
+                for (const spec of CLASS_SPECS[cls]) {
+                  if (typeof data.specEnabled[cls][spec] === 'boolean') {
+                    specEnabled[cls][spec] = data.specEnabled[cls][spec];
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    // ==================== Init ====================
+    loadState();
+    renderFactionTree();
+    renderClassTree();
+    updatePoolCount();
+
+    // Keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        randomize();
+      }
+    });
+  </script>
+</body>
+</html>
