@@ -140,6 +140,49 @@
       font-size: 0.9rem;
     }
 
+    /* Game mode toggle */
+    .mode-toggle {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .mode-toggle-inner {
+      display: inline-flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      padding: 0.5rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: bold;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mode-btn:hover { color: var(--text); background: var(--surface2); }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .race-item .race-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
     /* Section panels */
     .panel {
       background: var(--surface);
@@ -361,7 +404,11 @@
 <body>
   <div class="container">
     <h1>WoW HC Character Randomizer</h1>
-    <p class="subtitle">Random race / class / spec combinations for World of Warcraft: Hardcore (Classic)</p>
+    <p class="subtitle" id="subtitle"></p>
+
+    <div class="mode-toggle">
+      <div class="mode-toggle-inner" id="modeToggle"></div>
+    </div>
 
     <div class="result-box" id="resultBox">
       <span class="placeholder-text">Press the button to get a random character!</span>
@@ -385,22 +432,56 @@
   </div>
 
   <script>
-    // ==================== WoW Classic Data ====================
-    const FACTIONS = {
-      Alliance: ['Human', 'Dwarf', 'Night Elf', 'Gnome'],
-      Horde: ['Orc', 'Undead', 'Tauren', 'Troll']
+    // ==================== Game Mode Data ====================
+    const GAME_MODES = {
+      classic: {
+        label: 'Classic HC',
+        subtitle: 'Random race / class / spec combinations for World of Warcraft: Hardcore (Classic)',
+        factions: {
+          Alliance: ['Human', 'Dwarf', 'Night Elf', 'Gnome'],
+          Horde: ['Orc', 'Undead', 'Tauren', 'Troll']
+        },
+        raceClasses: {
+          Human: ['Warrior', 'Paladin', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+          Dwarf: ['Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest'],
+          'Night Elf': ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Druid'],
+          Gnome: ['Warrior', 'Rogue', 'Mage', 'Warlock'],
+          Orc: ['Warrior', 'Hunter', 'Rogue', 'Shaman', 'Warlock'],
+          Undead: ['Warrior', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+          Tauren: ['Warrior', 'Hunter', 'Shaman', 'Druid'],
+          Troll: ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Mage', 'Shaman']
+        }
+      },
+      forever: {
+        label: 'WoW Forever',
+        subtitle: 'Random race / class / spec combinations for World of Warcraft: Forever',
+        factions: {
+          Alliance: ['Human', 'Dwarf', 'Night Elf', 'Gnome', 'Skyborne (High Order)'],
+          Horde: ['Orc', 'Undead', 'Tauren', 'Troll', 'Skyborne (Windshaper)']
+        },
+        // New in Forever: Human Hunter, Dwarf Shaman, Gnome Priest,
+        // Orc Mage, Undead Paladin, Troll Warlock, plus the Skyborne race.
+        raceClasses: {
+          Human: ['Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+          Dwarf: ['Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest', 'Shaman'],
+          'Night Elf': ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Druid'],
+          Gnome: ['Warrior', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+          'Skyborne (High Order)': ['Warrior', 'Hunter', 'Rogue', 'Mage', 'Druid'],
+          Orc: ['Warrior', 'Hunter', 'Rogue', 'Shaman', 'Mage', 'Warlock'],
+          Undead: ['Warrior', 'Paladin', 'Rogue', 'Priest', 'Mage', 'Warlock'],
+          Tauren: ['Warrior', 'Hunter', 'Shaman', 'Druid'],
+          Troll: ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Shaman', 'Mage', 'Warlock'],
+          'Skyborne (Windshaper)': ['Warrior', 'Hunter', 'Rogue', 'Shaman', 'Druid']
+        },
+        newRaces: ['Skyborne (High Order)', 'Skyborne (Windshaper)']
+      }
     };
 
-    const RACE_CLASSES = {
-      Human: ['Warrior', 'Paladin', 'Rogue', 'Priest', 'Mage', 'Warlock'],
-      Dwarf: ['Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest'],
-      'Night Elf': ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Druid'],
-      Gnome: ['Warrior', 'Rogue', 'Mage', 'Warlock'],
-      Orc: ['Warrior', 'Hunter', 'Rogue', 'Shaman', 'Warlock'],
-      Undead: ['Warrior', 'Rogue', 'Priest', 'Mage', 'Warlock'],
-      Tauren: ['Warrior', 'Hunter', 'Shaman', 'Druid'],
-      Troll: ['Warrior', 'Hunter', 'Rogue', 'Priest', 'Mage', 'Shaman']
-    };
+    let gameMode = 'classic';
+
+    function getMode() {
+      return GAME_MODES[gameMode];
+    }
 
     const CLASS_SPECS = {
       Warrior: ['Arms', 'Fury', 'Protection'],
@@ -425,7 +506,10 @@
       Orc: 'race_orc_male',
       Undead: 'race_scourge_male',
       Tauren: 'race_tauren_male',
-      Troll: 'race_troll_male'
+      Troll: 'race_troll_male',
+      // No dedicated Skyborne icon yet; use the elf portrait as a stand-in
+      'Skyborne (High Order)': 'achievement_character_bloodelf_male',
+      'Skyborne (Windshaper)': 'achievement_character_bloodelf_male'
     };
 
     const CLASS_ICONS = {
@@ -485,9 +569,11 @@
     // ==================== State ====================
     // raceEnabled[raceName] = true/false
     let raceEnabled = {};
-    for (const races of Object.values(FACTIONS)) {
-      for (const race of races) {
-        raceEnabled[race] = true;
+    for (const mode of Object.values(GAME_MODES)) {
+      for (const races of Object.values(mode.factions)) {
+        for (const race of races) {
+          raceEnabled[race] = true;
+        }
       }
     }
 
@@ -501,11 +587,11 @@
     }
 
     // ==================== Build Pool ====================
-    function buildAllCombinations() {
+    function buildAllCombinations(mode) {
       const combos = [];
-      for (const [faction, races] of Object.entries(FACTIONS)) {
+      for (const [faction, races] of Object.entries(mode.factions)) {
         for (const race of races) {
-          for (const cls of RACE_CLASSES[race]) {
+          for (const cls of mode.raceClasses[race]) {
             for (const spec of CLASS_SPECS[cls]) {
               combos.push({ faction, race, class: cls, spec });
             }
@@ -515,10 +601,13 @@
       return combos;
     }
 
-    const ALL_COMBOS = buildAllCombinations();
+    const ALL_COMBOS = {};
+    for (const [key, mode] of Object.entries(GAME_MODES)) {
+      ALL_COMBOS[key] = buildAllCombinations(mode);
+    }
 
     function getFilteredPool() {
-      return ALL_COMBOS.filter(combo => {
+      return ALL_COMBOS[gameMode].filter(combo => {
         // Race filter
         if (!raceEnabled[combo.race]) return false;
         // Spec toggle filter
@@ -530,7 +619,7 @@
     function updatePoolCount() {
       const pool = getFilteredPool();
       document.getElementById('poolCount').textContent =
-        `${pool.length} combination${pool.length !== 1 ? 's' : ''} in pool (out of ${ALL_COMBOS.length} total)`;
+        `${pool.length} combination${pool.length !== 1 ? 's' : ''} in pool (out of ${ALL_COMBOS[gameMode].length} total)`;
     }
 
     // ==================== Randomize ====================
@@ -571,18 +660,20 @@
     };
 
     function isFactionEnabled(faction) {
-      return FACTIONS[faction].some(race => raceEnabled[race]);
+      return getMode().factions[faction].some(race => raceEnabled[race]);
     }
 
     function isFactionFullyEnabled(faction) {
-      return FACTIONS[faction].every(race => raceEnabled[race]);
+      return getMode().factions[faction].every(race => raceEnabled[race]);
     }
 
     function renderFactionTree() {
       const container = document.getElementById('factionTree');
       container.innerHTML = '';
 
-      for (const [faction, races] of Object.entries(FACTIONS)) {
+      const newRaces = getMode().newRaces || [];
+
+      for (const [faction, races] of Object.entries(getMode().factions)) {
         const factionOn = isFactionEnabled(faction);
         const group = document.createElement('div');
         group.className = `faction-group${factionOn ? '' : ' disabled'}`;
@@ -604,6 +695,7 @@
                 <div class="race-item${enabled ? '' : ' disabled'}" data-race="${race}">
                   <img src="${iconUrl(raceIcon)}" alt="${race}">
                   <span class="race-name">${race}</span>
+                  ${newRaces.includes(race) ? '<span class="race-badge">New</span>' : ''}
                 </div>
               `;
             }).join('')}
@@ -618,7 +710,7 @@
         header.addEventListener('click', () => {
           const faction = header.dataset.faction;
           const allOn = isFactionFullyEnabled(faction);
-          FACTIONS[faction].forEach(race => {
+          getMode().factions[faction].forEach(race => {
             raceEnabled[race] = !allOn;
           });
           renderFactionTree();
@@ -711,13 +803,16 @@
 
     // ==================== Persistence ====================
     function saveState() {
-      localStorage.setItem('hc-rand-state', JSON.stringify({ raceEnabled, specEnabled }));
+      localStorage.setItem('hc-rand-state', JSON.stringify({ gameMode, raceEnabled, specEnabled }));
     }
 
     function loadState() {
       try {
         const data = JSON.parse(localStorage.getItem('hc-rand-state'));
         if (data) {
+          if (GAME_MODES[data.gameMode]) {
+            gameMode = data.gameMode;
+          }
           if (data.raceEnabled) {
             for (const race of Object.keys(raceEnabled)) {
               if (typeof data.raceEnabled[race] === 'boolean') {
@@ -740,11 +835,42 @@
       } catch {}
     }
 
+    // ==================== Game Mode Toggle ====================
+    function renderModeToggle() {
+      const container = document.getElementById('modeToggle');
+      container.innerHTML = Object.entries(GAME_MODES).map(([key, mode]) => `
+        <button class="mode-btn${key === gameMode ? ' active' : ''}" data-mode="${key}">${mode.label}</button>
+      `).join('');
+
+      container.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.mode === gameMode) return;
+          gameMode = btn.dataset.mode;
+          resetResult();
+          renderAll();
+          saveState();
+        });
+      });
+
+      document.getElementById('subtitle').textContent = getMode().subtitle;
+    }
+
+    function resetResult() {
+      const box = document.getElementById('resultBox');
+      box.classList.remove('has-result');
+      box.innerHTML = '<span class="placeholder-text">Press the button to get a random character!</span>';
+    }
+
+    function renderAll() {
+      renderModeToggle();
+      renderFactionTree();
+      renderClassTree();
+      updatePoolCount();
+    }
+
     // ==================== Init ====================
     loadState();
-    renderFactionTree();
-    renderClassTree();
-    updatePoolCount();
+    renderAll();
 
     // Keyboard shortcut
     document.addEventListener('keydown', (e) => {
