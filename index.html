@@ -3,432 +3,638 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WoW HC Character Randomizer</title>
+  <title>World of Warcraft - Character Randomizer</title>
+  <meta name="description" content="Roll a random race, class and specialization for WoW Classic Hardcore or WoW Forever.">
+  <meta name="theme-color" content="#0b0a0f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #1a1a2e;
-      --surface: #16213e;
-      --surface2: #0f3460;
-      --accent: #e94560;
-      --accent-hover: #ff6b6b;
-      --text: #eaeaea;
-      --text-muted: #a0a0b0;
-      --alliance: #0078ff;
-      --horde: #b30000;
-      --border: #2a2a4a;
-      --success: #4caf50;
-      --disabled: #555;
+      --bg: #0b0a0f;
+      --panel: rgba(24, 20, 28, 0.82);
+      --panel-solid: #18141c;
+      --card: #120f16;
+      --card-hover: #1d1822;
+      --border: #3a3022;
+      --border-soft: rgba(201, 162, 39, 0.16);
+      --gold: #f2c45a;
+      --gold-bright: #ffe39a;
+      --gold-deep: #b9832a;
+      --gold-dim: #7a6232;
+      --text: #ece6d8;
+      --text-muted: #9a917f;
+      --alliance: #4a8cff;
+      --horde: #e0453a;
+      --danger: #ff6b5b;
+      --radius: 14px;
+      --font-display: 'Cinzel', 'Times New Roman', serif;
+      --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    html { -webkit-text-size-adjust: 100%; }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg);
+      font-family: var(--font-body);
       color: var(--text);
       min-height: 100vh;
-      padding: 2rem 1rem;
+      padding: 3rem 1rem 2rem;
+      background:
+        radial-gradient(1100px 520px at 50% -8%, rgba(242, 196, 90, 0.14), transparent 62%),
+        radial-gradient(800px 600px at 105% 40%, rgba(90, 50, 140, 0.16), transparent 60%),
+        radial-gradient(800px 600px at -5% 85%, rgba(40, 80, 150, 0.12), transparent 60%),
+        var(--bg);
+      background-attachment: fixed;
+      line-height: 1.45;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto;
     }
 
-    h1 {
+    /* ==================== Header ==================== */
+    .hero {
       text-align: center;
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      color: var(--accent);
+      margin-bottom: 2rem;
+    }
+
+    .title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.7rem, 4.2vw, 2.4rem);
+      line-height: 1.15;
+      text-wrap: balance;
+      letter-spacing: 0.02em;
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 45%, var(--gold-deep) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 2px 12px rgba(242, 196, 90, 0.25));
+    }
+
+    .ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 0.9rem auto 0.8rem;
+      max-width: 360px;
+      color: var(--gold-deep);
+    }
+
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-deep));
+    }
+
+    .ornament::after { background: linear-gradient(90deg, var(--gold-deep), transparent); }
+
+    .ornament span {
+      width: 8px;
+      height: 8px;
+      transform: rotate(45deg);
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(242, 196, 90, 0.6);
     }
 
     .subtitle {
-      text-align: center;
       color: var(--text-muted);
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
 
-    /* Result display */
-    .result-box {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      text-align: center;
-      margin-bottom: 2rem;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.3s;
-    }
-
-    .result-box.has-result { border-color: var(--accent); }
-
-    .result-icons {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .result-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 8px;
-      border: 2px solid var(--border);
-    }
-
-    .result-icon.race-icon { border-color: #888; }
-    .result-icon.class-icon { border-color: #ffd100; }
-    .result-icon.spec-icon { border-color: var(--accent); }
-
-    .result-race {
-      font-size: 1.4rem;
-      font-weight: bold;
-      margin-bottom: 0.3rem;
-    }
-
-    .result-class {
-      font-size: 1.8rem;
-      font-weight: bold;
-      margin-bottom: 0.3rem;
-    }
-
-    .result-faction {
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
-      padding: 0.2rem 0.8rem;
-      border-radius: 4px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .result-faction.alliance { background: var(--alliance); color: #fff; }
-    .result-faction.horde { background: var(--horde); color: #fff; }
-
-    .placeholder-text {
-      color: var(--text-muted);
-      font-style: italic;
-      font-size: 1.1rem;
-    }
-
-    .randomize-btn {
-      display: block;
-      margin: 0 auto 2rem;
-      padding: 1rem 3rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .randomize-btn:hover { background: var(--accent-hover); }
-    .randomize-btn:active { transform: scale(0.97); }
-
-    .pool-count {
-      text-align: center;
-      margin-bottom: 2rem;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    /* Game mode toggle */
+    /* ==================== Mode toggle ==================== */
     .mode-toggle {
       display: flex;
       justify-content: center;
-      margin-bottom: 1.5rem;
+      margin: 1.5rem 0 2rem;
     }
 
     .mode-toggle-inner {
       display: inline-flex;
-      background: var(--surface);
+      background: rgba(0, 0, 0, 0.35);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 999px;
       padding: 4px;
       gap: 4px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
     }
 
     .mode-btn {
-      padding: 0.5rem 1.25rem;
-      font-size: 0.95rem;
-      font-weight: bold;
-      background: transparent;
+      padding: 0.55rem 1.4rem;
+      border-radius: 999px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
       color: var(--text-muted);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: color 0.2s, background 0.2s, box-shadow 0.2s;
     }
 
-    .mode-btn:hover { color: var(--text); background: var(--surface2); }
+    .mode-btn:hover { color: var(--text); }
 
     .mode-btn.active {
-      background: var(--accent);
+      color: #1a1206;
+      background: linear-gradient(180deg, var(--gold-bright), var(--gold) 50%, var(--gold-deep));
+      box-shadow: 0 2px 10px rgba(242, 196, 90, 0.3);
+    }
+
+    /* ==================== Result card ==================== */
+    .result-card {
+      --cls: var(--gold);
+      position: relative;
+      background:
+        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--cls) 14%, transparent), transparent 70%),
+        linear-gradient(180deg, #1c1720, #110e14);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.25rem 1.5rem;
+      min-height: 290px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      transition: border-color 0.4s, box-shadow 0.4s;
+      overflow: hidden;
+    }
+
+    .result-card.has-result {
+      border-color: color-mix(in srgb, var(--cls) 55%, var(--border));
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.45),
+        0 0 40px color-mix(in srgb, var(--cls) 18%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* Gold corner ornaments */
+    .corner {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-color: var(--gold-deep);
+      border-style: solid;
+      opacity: 0.8;
+    }
+
+    .corner.tl { top: 10px; left: 10px; border-width: 2px 0 0 2px; border-top-left-radius: 6px; }
+    .corner.tr { top: 10px; right: 10px; border-width: 2px 2px 0 0; border-top-right-radius: 6px; }
+    .corner.bl { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; border-bottom-left-radius: 6px; }
+    .corner.br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; border-bottom-right-radius: 6px; }
+
+    .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      color: var(--text-muted);
+    }
+
+    .placeholder-sigil {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--gold);
+      border: 2px solid var(--gold-dim);
+      background: radial-gradient(circle, rgba(242, 196, 90, 0.12), transparent 70%);
+      animation: pulse 2.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(242, 196, 90, 0.25); }
+      50% { box-shadow: 0 0 0 12px rgba(242, 196, 90, 0); }
+    }
+
+    .result-inner { width: 100%; }
+
+    .result-inner.reveal { animation: reveal 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+    .result-inner.rolling { opacity: 0.55; filter: blur(0.6px); }
+
+    @keyframes reveal {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .result-icons {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .ri {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .ri img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      border: 2px solid var(--gold-dim);
+      background: var(--card);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .ri.main img {
+      width: 84px;
+      height: 84px;
+      border-radius: 14px;
+      border-color: var(--cls);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55), 0 0 24px color-mix(in srgb, var(--cls) 35%, transparent);
+    }
+
+    .ri figcaption {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .result-race {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+
+    .result-class {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 5vw, 2.3rem);
+      font-weight: 800;
+      color: var(--cls);
+      text-shadow: 0 0 22px color-mix(in srgb, var(--cls) 40%, transparent);
+      margin-bottom: 0.9rem;
+    }
+
+    .faction-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.3rem 0.85rem 0.3rem 0.35rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       color: #fff;
     }
 
-    .race-item .race-badge {
-      margin-left: auto;
-      font-size: 0.7rem;
-      font-weight: bold;
-      color: var(--accent);
-      text-transform: uppercase;
+    .faction-badge img { width: 22px; height: 22px; border-radius: 50%; }
+    .faction-badge.alliance { background: linear-gradient(180deg, #2f6fe0, #1b4596); }
+    .faction-badge.horde { background: linear-gradient(180deg, #c8352b, #821a14); }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.95rem;
     }
 
-    /* Section panels */
+    /* ==================== Roll controls ==================== */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      margin: 1.75rem 0 2.5rem;
+    }
+
+    .randomize-btn {
+      position: relative;
+      padding: 0.95rem 3.2rem;
+      border-radius: 10px;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+      color: #1a1206;
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 45%, var(--gold-deep) 100%);
+      border: 1px solid #6b4a12;
+      box-shadow:
+        0 6px 20px rgba(242, 196, 90, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+      transition: transform 0.12s, box-shadow 0.2s, filter 0.2s;
+    }
+
+    .randomize-btn:hover { filter: brightness(1.08); box-shadow: 0 8px 28px rgba(242, 196, 90, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.2); }
+    .randomize-btn:active { transform: translateY(1px) scale(0.98); }
+    .randomize-btn:disabled { cursor: wait; filter: saturate(0.7) brightness(0.9); }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    kbd {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      background: var(--card);
+      color: var(--text);
+    }
+
+    .pool {
+      width: min(360px, 100%);
+    }
+
+    .pool-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .pool-label strong { color: var(--gold); font-weight: 600; }
+
+    .pool-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+    }
+
+    .pool-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+      transition: width 0.35s ease;
+    }
+
+    .pool-fill.empty { background: var(--danger); }
+
+    /* ==================== Panels ==================== */
     .panel {
-      background: var(--surface);
-      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
       padding: 1.5rem;
       margin-bottom: 1.5rem;
+      backdrop-filter: blur(6px);
     }
 
-    .panel h2 {
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-display);
       font-size: 1.1rem;
-      margin-bottom: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--gold);
+      margin-bottom: 0.25rem;
     }
 
-    /* Faction/Race tree */
-    .faction-tree {
+    .panel-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    .panel-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.1rem;
+    }
+
+    .tree {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
       gap: 1rem;
     }
 
-    .faction-group {
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 0.75rem;
+    .tree.factions { grid-template-columns: repeat(2, 1fr); }
+
+    /* Group card (faction or class) */
+    .group {
+      --accent: var(--gold);
+      background: var(--card);
       border: 1px solid var(--border);
-      transition: border-color 0.2s;
+      border-top: 3px solid var(--accent);
+      border-radius: 10px;
+      padding: 0.5rem;
+      transition: opacity 0.2s, border-color 0.2s;
     }
 
-    .faction-group.disabled { border-color: transparent; opacity: 0.5; }
+    .group.off { opacity: 0.55; border-top-color: var(--border); }
 
-    .faction-header {
+    .group-header {
+      width: 100%;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0.4rem;
-      cursor: pointer;
-      border-radius: 6px;
+      gap: 0.7rem;
+      padding: 0.5rem;
+      border-radius: 7px;
       transition: background 0.15s;
-      user-select: none;
     }
 
-    .faction-header:hover { background: var(--surface2); }
+    .group-header:hover { background: var(--card-hover); }
 
-    .faction-header .faction-icon {
-      width: 32px;
-      height: 32px;
-    }
-
-    .faction-header .faction-name {
-      font-weight: bold;
-      font-size: 0.95rem;
-    }
-
-    .faction-header.disabled .faction-name {
-      color: var(--text-muted);
-      text-decoration: line-through;
-    }
-
-    .faction-header .toggle-indicator {
-      margin-left: auto;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .race-list {
-      margin-top: 0.4rem;
-      padding-left: 0.5rem;
-    }
-
-    .race-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.5rem;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background 0.15s;
-      user-select: none;
-    }
-
-    .race-item:hover { background: var(--surface2); }
-
-    .race-item img {
-      width: 24px;
-      height: 24px;
-      border-radius: 4px;
-      border: 1px solid #888;
-    }
-
-    .race-item.disabled img {
-      border-color: var(--disabled);
-      filter: grayscale(0.8);
-    }
-
-    .race-item .race-name {
-      font-size: 0.88rem;
-    }
-
-    .race-item.disabled .race-name {
-      color: var(--text-muted);
-      text-decoration: line-through;
-    }
-
-    /* Class/Spec tree */
-    .class-tree {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-    }
-
-    .class-group {
-      background: var(--bg);
+    .group-header img {
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      transition: border-color 0.2s;
+      border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
     }
 
-    .class-group.disabled { border-color: transparent; opacity: 0.5; }
+    .group.off .group-header img { filter: grayscale(1); }
 
-    .class-header {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.4rem;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: background 0.15s;
-      user-select: none;
-    }
-
-    .class-header:hover { background: var(--surface2); }
-
-    .class-header img {
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      border: 2px solid #ffd100;
-    }
-
-    .class-header.disabled img {
-      border-color: var(--disabled);
-      filter: grayscale(0.8);
-    }
-
-    .class-header .class-name {
-      font-weight: bold;
-      font-size: 0.95rem;
-    }
-
-    .class-header.disabled .class-name {
-      color: var(--text-muted);
-      text-decoration: line-through;
-    }
-
-    .class-header .toggle-indicator {
-      margin-left: auto;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .spec-list {
-      margin-top: 0.4rem;
-      padding-left: 0.5rem;
-    }
-
-    .spec-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.5rem;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background 0.15s;
-      user-select: none;
-    }
-
-    .spec-item:hover { background: var(--surface2); }
-
-    .spec-item img {
-      width: 24px;
-      height: 24px;
-      border-radius: 4px;
-      border: 1px solid var(--accent);
-    }
-
-    .spec-item.disabled img {
-      border-color: var(--disabled);
-      filter: grayscale(0.8);
-    }
-
-    .spec-item .spec-name {
-      font-size: 0.88rem;
-    }
-
-    .spec-item.disabled .spec-name {
-      color: var(--text-muted);
-      text-decoration: line-through;
-    }
-
-    /* Error */
-    .error-msg {
+    .group-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
       color: var(--accent);
-      text-align: center;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
+      letter-spacing: 0.02em;
     }
 
-    /* Responsive */
+    .group.off .group-name { color: var(--text-muted); }
+
+    .status-pill {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .status-pill.all { color: var(--gold); border-color: var(--gold-dim); background: rgba(242, 196, 90, 0.08); }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 0.25rem;
+    }
+
+    .item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 7px;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .item:hover { background: var(--card-hover); }
+
+    .item img {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: filter 0.15s;
+    }
+
+    .item-name { font-size: 0.9rem; }
+
+    .item.off { opacity: 0.45; }
+    .item.off img { filter: grayscale(1); }
+
+    .new-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.12rem 0.4rem;
+      border-radius: 4px;
+      color: #1a1206;
+      background: var(--gold);
+    }
+
+    .check {
+      margin-left: auto;
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--gold-dim);
+      position: relative;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .item:not(.off) .check {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .item:not(.off) .check::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 5px;
+      height: 10px;
+      border: solid #1a1206;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    /* ==================== Footer ==================== */
+    .footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0.7;
+      margin-top: 2rem;
+    }
+
     @media (max-width: 600px) {
-      body { padding: 1rem 0.5rem; }
-      h1 { font-size: 1.5rem; }
-      .result-class { font-size: 1.4rem; }
-      .randomize-btn { padding: 0.8rem 2rem; font-size: 1rem; }
-      .class-tree { grid-template-columns: 1fr; }
+      body { padding: 2rem 1rem 1.5rem; }
+      .result-card { padding: 2rem 1rem; min-height: 260px; }
+      .result-icons { gap: 0.8rem; }
+      .ri img { width: 50px; height: 50px; }
+      .ri.main img { width: 70px; height: 70px; }
+      .randomize-btn { width: 100%; }
+      .panel { padding: 1.1rem; }
+      .tree, .tree.factions { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>WoW HC Character Randomizer</h1>
-    <p class="subtitle" id="subtitle"></p>
+    <header class="hero">
+      <h1 class="title">World of Warcraft - Character Randomizer</h1>
+      <div class="ornament" aria-hidden="true"><span></span></div>
+      <p class="subtitle" id="subtitle"></p>
+    </header>
 
     <div class="mode-toggle">
-      <div class="mode-toggle-inner" id="modeToggle"></div>
+      <div class="mode-toggle-inner" id="modeToggle" role="group" aria-label="Game mode"></div>
     </div>
 
-    <div class="result-box" id="resultBox">
-      <span class="placeholder-text">Press the button to get a random character!</span>
+    <section class="result-card" id="resultBox" aria-live="polite">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div id="resultContent"></div>
+    </section>
+
+    <div class="controls">
+      <button class="randomize-btn" id="randomizeBtn">Randomize</button>
+      <p class="hint">or press <kbd>Space</kbd></p>
+      <div class="pool">
+        <div class="pool-label"><span>Combinations in pool</span><span id="poolCount"></span></div>
+        <div class="pool-bar"><div class="pool-fill" id="poolFill"></div></div>
+      </div>
     </div>
 
-    <button class="randomize-btn" id="randomizeBtn">Randomize!</button>
+    <section class="panel">
+      <h2 class="panel-title">Factions &amp; Races</h2>
+      <p class="panel-desc">Click a race to include or exclude it. Click a faction to toggle all of its races.</p>
+      <div class="tree factions" id="factionTree"></div>
+    </section>
 
-    <p class="pool-count" id="poolCount"></p>
+    <section class="panel">
+      <h2 class="panel-title">Classes &amp; Specializations</h2>
+      <p class="panel-desc">Click a spec to include or exclude it. Click a class to toggle all of its specs.</p>
+      <div class="tree" id="classTree"></div>
+    </section>
 
-    <!-- Faction/Race toggles -->
-    <div class="panel">
-      <h2>Factions &amp; Races</h2>
-      <div class="faction-tree" id="factionTree"></div>
-    </div>
-
-    <!-- Class/Spec toggles -->
-    <div class="panel">
-      <h2>Classes &amp; Specializations</h2>
-      <div class="class-tree" id="classTree"></div>
-    </div>
+    <footer class="footer">
+      Fan-made tool, not affiliated with Blizzard Entertainment. Icons via Wowhead.
+    </footer>
   </div>
 
   <script>
@@ -436,7 +642,7 @@
     const GAME_MODES = {
       classic: {
         label: 'Classic HC',
-        subtitle: 'Random race / class / spec combinations for World of Warcraft: Hardcore (Classic)',
+        subtitle: 'Roll a random race, class & spec for Classic Hardcore',
         factions: {
           Alliance: ['Human', 'Dwarf', 'Night Elf', 'Gnome'],
           Horde: ['Orc', 'Undead', 'Tauren', 'Troll']
@@ -454,7 +660,7 @@
       },
       forever: {
         label: 'WoW Forever',
-        subtitle: 'Random race / class / spec combinations for World of Warcraft: Forever',
+        subtitle: 'Roll a random race, class & spec for WoW Forever',
         factions: {
           Alliance: ['Human', 'Dwarf', 'Night Elf', 'Gnome', 'Skyborne (High Order)'],
           Horde: ['Orc', 'Undead', 'Tauren', 'Troll', 'Skyborne (Windshaper)']
@@ -618,47 +824,150 @@
 
     function updatePoolCount() {
       const pool = getFilteredPool();
-      document.getElementById('poolCount').textContent =
-        `${pool.length} combination${pool.length !== 1 ? 's' : ''} in pool (out of ${ALL_COMBOS[gameMode].length} total)`;
+      const total = ALL_COMBOS[gameMode].length;
+      document.getElementById('poolCount').innerHTML = `<strong>${pool.length}</strong> / ${total}`;
+      const fill = document.getElementById('poolFill');
+      fill.style.width = `${total ? (pool.length / total) * 100 : 0}%`;
+      fill.classList.toggle('empty', pool.length === 0);
     }
 
-    // ==================== Randomize ====================
-    function randomize() {
-      const pool = getFilteredPool();
-      const box = document.getElementById('resultBox');
+    // ==================== Class Colors ====================
+    const CLASS_COLORS = {
+      Warrior: '#C69B6D',
+      Paladin: '#F48CBA',
+      Hunter: '#AAD372',
+      Rogue: '#FFF468',
+      Priest: '#FFFFFF',
+      Shaman: '#0070DD',
+      Mage: '#3FC7EB',
+      Warlock: '#8788EE',
+      Druid: '#FF7C0A'
+    };
 
-      if (pool.length === 0) {
-        box.innerHTML = '<span class="error-msg">No valid combinations! Enable some specs above.</span>';
-        box.classList.remove('has-result');
-        return;
-      }
+    const FACTION_COLORS = {
+      Alliance: 'var(--alliance)',
+      Horde: 'var(--horde)'
+    };
 
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      const raceIcon = RACE_ICONS[pick.race];
-      const classIcon = CLASS_ICONS[pick.class];
-      const specIcon = getSpecIcon(pick.spec, pick.class);
-
-      box.classList.add('has-result');
-      box.innerHTML = `
-        <div class="result-icons">
-          <img src="${iconUrl(raceIcon)}" class="result-icon race-icon" alt="${pick.race}" title="${pick.race}">
-          <img src="${iconUrl(classIcon)}" class="result-icon class-icon" alt="${pick.class}" title="${pick.class}">
-          <img src="${iconUrl(specIcon)}" class="result-icon spec-icon" alt="${pick.spec}" title="${pick.spec}">
-        </div>
-        <div class="result-race">${pick.race}</div>
-        <div class="result-class">${pick.spec} ${pick.class}</div>
-        <div class="result-faction ${pick.faction.toLowerCase()}">${pick.faction}</div>
-      `;
-    }
-
-    document.getElementById('randomizeBtn').addEventListener('click', randomize);
-
-    // ==================== Faction/Race Tree ====================
     const FACTION_ICONS = {
       Alliance: 'achievement_pvp_a_a',
       Horde: 'achievement_pvp_h_h'
     };
 
+    // ==================== Randomize ====================
+    const resultBox = document.getElementById('resultBox');
+    const resultContent = document.getElementById('resultContent');
+    const randomizeBtn = document.getElementById('randomizeBtn');
+    let rollToken = 0;
+
+    function showResult(pick, final) {
+      const specIcon = getSpecIcon(pick.spec, pick.class);
+      resultBox.style.setProperty('--cls', CLASS_COLORS[pick.class]);
+      resultBox.classList.toggle('has-result', final);
+      resultContent.innerHTML = `
+        <div class="result-inner ${final ? 'reveal' : 'rolling'}">
+          <div class="result-icons">
+            <figure class="ri">
+              <img src="${iconUrl(RACE_ICONS[pick.race])}" alt="${pick.race}" title="${pick.race}">
+              <figcaption>Race</figcaption>
+            </figure>
+            <figure class="ri main">
+              <img src="${iconUrl(CLASS_ICONS[pick.class])}" alt="${pick.class}" title="${pick.class}">
+              <figcaption>Class</figcaption>
+            </figure>
+            <figure class="ri">
+              <img src="${iconUrl(specIcon)}" alt="${pick.spec}" title="${pick.spec}">
+              <figcaption>Spec</figcaption>
+            </figure>
+          </div>
+          <div class="result-race">${pick.race}</div>
+          <div class="result-class">${pick.spec} ${pick.class}</div>
+          <div class="faction-badge ${pick.faction.toLowerCase()}">
+            <img src="${iconUrl(FACTION_ICONS[pick.faction])}" alt="">
+            ${pick.faction}
+          </div>
+        </div>
+      `;
+    }
+
+    function resetResult() {
+      rollToken++;
+      randomizeBtn.disabled = false;
+      resultBox.classList.remove('has-result');
+      resultBox.style.removeProperty('--cls');
+      resultContent.innerHTML = `
+        <div class="placeholder">
+          <div class="placeholder-sigil">?</div>
+          <span>Press <strong>Randomize</strong> to roll your next character.</span>
+        </div>
+      `;
+    }
+
+    function randomize() {
+      if (randomizeBtn.disabled) return;
+      const pool = getFilteredPool();
+
+      if (pool.length === 0) {
+        resetResult();
+        resultContent.innerHTML = '<span class="error-msg">No valid combinations left. Enable some races or specs below.</span>';
+        return;
+      }
+
+      const randomPick = () => pool[Math.floor(Math.random() * pool.length)];
+      const pick = randomPick();
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || pool.length === 1) {
+        showResult(pick, true);
+        return;
+      }
+
+      // Short slot-machine style roll before revealing the result
+      const token = ++rollToken;
+      const frames = 8;
+      let frame = 0;
+      randomizeBtn.disabled = true;
+
+      const tick = () => {
+        if (token !== rollToken) return;
+        if (frame < frames) {
+          showResult(randomPick(), false);
+          frame++;
+          setTimeout(tick, 35 + frame * 10);
+        } else {
+          showResult(pick, true);
+          randomizeBtn.disabled = false;
+        }
+      };
+      tick();
+    }
+
+    randomizeBtn.addEventListener('click', randomize);
+
+    // ==================== Toggle Trees ====================
+    function statusPill(all, some) {
+      const [cls, label] = all ? ['all', 'All'] : some ? ['some', 'Some'] : ['off', 'Off'];
+      return `<span class="status-pill ${cls}">${label}</span>`;
+    }
+
+    function onToggle() {
+      // Re-rendering replaces the buttons, so restore keyboard focus afterwards
+      const active = document.activeElement;
+      const selector = active && active.dataset && Object.keys(active.dataset).length
+        ? Object.entries(active.dataset).map(([k, v]) => `[data-${k}="${v}"]`).join('')
+        : null;
+
+      renderFactionTree();
+      renderClassTree();
+      updatePoolCount();
+      saveState();
+
+      if (selector) {
+        const el = document.querySelector(selector);
+        if (el) el.focus();
+      }
+    }
+
+    // ---------- Factions & Races ----------
     function isFactionEnabled(faction) {
       return getMode().factions[faction].some(race => raceEnabled[race]);
     }
@@ -669,68 +978,55 @@
 
     function renderFactionTree() {
       const container = document.getElementById('factionTree');
-      container.innerHTML = '';
-
       const newRaces = getMode().newRaces || [];
 
-      for (const [faction, races] of Object.entries(getMode().factions)) {
+      container.innerHTML = Object.entries(getMode().factions).map(([faction, races]) => {
         const factionOn = isFactionEnabled(faction);
-        const group = document.createElement('div');
-        group.className = `faction-group${factionOn ? '' : ' disabled'}`;
-
-        const headerDisabled = !factionOn ? ' disabled' : '';
-        const factionColor = faction === 'Alliance' ? 'var(--alliance)' : 'var(--horde)';
-
-        group.innerHTML = `
-          <div class="faction-header${headerDisabled}" data-faction="${faction}">
-            <img class="faction-icon" src="${iconUrl(FACTION_ICONS[faction])}" alt="${faction}" style="width: 32px; height: 32px; border-radius: 4px;">
-            <span class="faction-name">${faction}</span>
-            <span class="toggle-indicator">${isFactionFullyEnabled(faction) ? 'all' : factionOn ? 'some' : 'off'}</span>
-          </div>
-          <div class="race-list">
-            ${races.map(race => {
-              const raceIcon = RACE_ICONS[race];
-              const enabled = raceEnabled[race];
-              return `
-                <div class="race-item${enabled ? '' : ' disabled'}" data-race="${race}">
-                  <img src="${iconUrl(raceIcon)}" alt="${race}">
-                  <span class="race-name">${race}</span>
-                  ${newRaces.includes(race) ? '<span class="race-badge">New</span>' : ''}
-                </div>
-              `;
-            }).join('')}
+        return `
+          <div class="group${factionOn ? '' : ' off'}" style="--accent: ${FACTION_COLORS[faction]}">
+            <button class="group-header" data-faction="${faction}" aria-pressed="${isFactionFullyEnabled(faction)}">
+              <img src="${iconUrl(FACTION_ICONS[faction])}" alt="">
+              <span class="group-name">${faction}</span>
+              ${statusPill(isFactionFullyEnabled(faction), factionOn)}
+            </button>
+            <div class="item-list">
+              ${races.map(race => {
+                const enabled = raceEnabled[race];
+                return `
+                  <button class="item${enabled ? '' : ' off'}" data-race="${race}" aria-pressed="${enabled}">
+                    <img src="${iconUrl(RACE_ICONS[race])}" alt="">
+                    <span class="item-name">${race}</span>
+                    ${newRaces.includes(race) ? '<span class="new-badge">New</span>' : ''}
+                    <span class="check"></span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
           </div>
         `;
+      }).join('');
 
-        container.appendChild(group);
-      }
-
-      // Attach events
-      container.querySelectorAll('.faction-header').forEach(header => {
+      container.querySelectorAll('[data-faction]').forEach(header => {
         header.addEventListener('click', () => {
           const faction = header.dataset.faction;
           const allOn = isFactionFullyEnabled(faction);
           getMode().factions[faction].forEach(race => {
             raceEnabled[race] = !allOn;
           });
-          renderFactionTree();
-          updatePoolCount();
-          saveState();
+          onToggle();
         });
       });
 
-      container.querySelectorAll('.race-item').forEach(item => {
+      container.querySelectorAll('[data-race]').forEach(item => {
         item.addEventListener('click', () => {
           const race = item.dataset.race;
           raceEnabled[race] = !raceEnabled[race];
-          renderFactionTree();
-          updatePoolCount();
-          saveState();
+          onToggle();
         });
       });
     }
 
-    // ==================== Class/Spec Tree ====================
+    // ---------- Classes & Specs ----------
     function isClassEnabled(cls) {
       return CLASS_SPECS[cls].some(spec => specEnabled[cls][spec]);
     }
@@ -741,41 +1037,33 @@
 
     function renderClassTree() {
       const container = document.getElementById('classTree');
-      container.innerHTML = '';
 
-      for (const [cls, specs] of Object.entries(CLASS_SPECS)) {
-        const classEnabled = isClassEnabled(cls);
-        const group = document.createElement('div');
-        group.className = `class-group${classEnabled ? '' : ' disabled'}`;
-
-        const classIcon = CLASS_ICONS[cls];
-        const headerDisabled = !classEnabled ? ' disabled' : '';
-
-        group.innerHTML = `
-          <div class="class-header${headerDisabled}" data-class="${cls}">
-            <img src="${iconUrl(classIcon)}" alt="${cls}">
-            <span class="class-name">${cls}</span>
-            <span class="toggle-indicator">${isClassFullyEnabled(cls) ? 'all' : classEnabled ? 'some' : 'off'}</span>
-          </div>
-          <div class="spec-list">
-            ${specs.map(spec => {
-              const specIcon = getSpecIcon(spec, cls);
-              const enabled = specEnabled[cls][spec];
-              return `
-                <div class="spec-item${enabled ? '' : ' disabled'}" data-class="${cls}" data-spec="${spec}">
-                  <img src="${iconUrl(specIcon)}" alt="${spec}">
-                  <span class="spec-name">${spec}</span>
-                </div>
-              `;
-            }).join('')}
+      container.innerHTML = Object.entries(CLASS_SPECS).map(([cls, specs]) => {
+        const classOn = isClassEnabled(cls);
+        return `
+          <div class="group${classOn ? '' : ' off'}" style="--accent: ${CLASS_COLORS[cls]}">
+            <button class="group-header" data-class="${cls}" aria-pressed="${isClassFullyEnabled(cls)}">
+              <img src="${iconUrl(CLASS_ICONS[cls])}" alt="">
+              <span class="group-name">${cls}</span>
+              ${statusPill(isClassFullyEnabled(cls), classOn)}
+            </button>
+            <div class="item-list">
+              ${specs.map(spec => {
+                const enabled = specEnabled[cls][spec];
+                return `
+                  <button class="item${enabled ? '' : ' off'}" data-cls="${cls}" data-spec="${spec}" aria-pressed="${enabled}">
+                    <img src="${iconUrl(getSpecIcon(spec, cls))}" alt="">
+                    <span class="item-name">${spec}</span>
+                    <span class="check"></span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
           </div>
         `;
+      }).join('');
 
-        container.appendChild(group);
-      }
-
-      // Attach events
-      container.querySelectorAll('.class-header').forEach(header => {
+      container.querySelectorAll('[data-class]').forEach(header => {
         header.addEventListener('click', () => {
           const cls = header.dataset.class;
           // If all enabled -> disable all. Otherwise -> enable all.
@@ -783,20 +1071,15 @@
           CLASS_SPECS[cls].forEach(spec => {
             specEnabled[cls][spec] = !allOn;
           });
-          renderClassTree();
-          updatePoolCount();
-          saveState();
+          onToggle();
         });
       });
 
-      container.querySelectorAll('.spec-item').forEach(item => {
+      container.querySelectorAll('[data-spec]').forEach(item => {
         item.addEventListener('click', () => {
-          const cls = item.dataset.class;
-          const spec = item.dataset.spec;
+          const { cls, spec } = item.dataset;
           specEnabled[cls][spec] = !specEnabled[cls][spec];
-          renderClassTree();
-          updatePoolCount();
-          saveState();
+          onToggle();
         });
       });
     }
@@ -835,11 +1118,12 @@
       } catch {}
     }
 
+
     // ==================== Game Mode Toggle ====================
     function renderModeToggle() {
       const container = document.getElementById('modeToggle');
       container.innerHTML = Object.entries(GAME_MODES).map(([key, mode]) => `
-        <button class="mode-btn${key === gameMode ? ' active' : ''}" data-mode="${key}">${mode.label}</button>
+        <button class="mode-btn${key === gameMode ? ' active' : ''}" data-mode="${key}" aria-pressed="${key === gameMode}">${mode.label}</button>
       `).join('');
 
       container.querySelectorAll('.mode-btn').forEach(btn => {
@@ -855,12 +1139,6 @@
       document.getElementById('subtitle').textContent = getMode().subtitle;
     }
 
-    function resetResult() {
-      const box = document.getElementById('resultBox');
-      box.classList.remove('has-result');
-      box.innerHTML = '<span class="placeholder-text">Press the button to get a random character!</span>';
-    }
-
     function renderAll() {
       renderModeToggle();
       renderFactionTree();
@@ -870,14 +1148,15 @@
 
     // ==================== Init ====================
     loadState();
+    resetResult();
     renderAll();
 
-    // Keyboard shortcut
+    // Keyboard shortcut (focused buttons keep their native Space behavior)
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
-        e.preventDefault();
-        randomize();
-      }
+      if (e.code !== 'Space' || e.repeat) return;
+      if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+      e.preventDefault();
+      randomize();
     });
   </script>
 </body>
