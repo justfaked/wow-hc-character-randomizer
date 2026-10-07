@@ -1,10 +1,12 @@
 # WoW HC Character Randomizer
 
-A simple single-page tool that generates random Race / Class / Specialization combinations for World of Warcraft: Hardcore (Classic).
+A simple single-page tool that generates random Race / Class / Specialization combinations for World of Warcraft: Hardcore (Classic) and World of Warcraft: Forever.
 
 ## Features
 
-- Randomize from all valid WoW Classic race/class/spec combinations
+- Switch between **Classic HC** and **WoW Forever** game modes
+- Randomize from all valid race/class/spec combinations for the selected mode
+- WoW Forever includes the Skyborne race (High Order / Windshaper) and the new combos: Human Hunter, Dwarf Shaman, Gnome Priest, Orc Mage, Undead Paladin, Troll Warlock
 - Toggle factions and individual races on/off
 - Toggle classes and individual specs on/off
 - Live pool counter shows how many combinations remain
